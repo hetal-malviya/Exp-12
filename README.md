@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🌤️ WeatherNow — Real-Time Android Weather Application
 ### Practical Experiment: *“Access Web Services Using HTTP Requests in Android”*
 
@@ -25,19 +26,70 @@ Exp12/
 └── README.md                              # Project Documentation
 ```
 
+=======
+# WeatherNow — Real-Time Android Weather Application
+### Practical Experiment: *“Access Web Services Using HTTP Requests in Android”*
+
+**WeatherNow** is a modern, production-grade Android application developed in **Java** and **XML layouts** that demonstrates accessing live web services through HTTP GET requests using `HttpURLConnection`.
+
+---
+
+## 🏗️ System Design & Architecture
+
+The application follows a clean separation of concerns and robust multithreading design to ensure the UI remains responsive during network operations.
+
+### Architecture Diagram
+```mermaid
+graph TD
+    UI[User Interface / MainActivity] -->|User Input: City Name| ES[ExecutorService / Background Thread]
+    ES -->|HTTP GET: Geocoding API| Geo[Open-Meteo Geocoding API]
+    Geo -->|JSON Response: Lat/Lon| ES
+    ES -->|HTTP GET: Forecast API| Weather[Open-Meteo Weather API]
+    Weather -->|JSON Response: Weather Data| ES
+    ES -->|HTTP GET: Public Icons & Images| Img[OpenWeatherMap & Picsum APIs]
+    Img -->|Bitmaps| ES
+    ES -->|runOnUiThread| UI
+    UI -->|Render Weather Card & Stats| Screen[User Display]
+```
+
+### Key Technical Components:
+1. **Networking Layer (`HttpURLConnection`)**:
+   - Sends HTTP GET requests to public REST APIs without requiring API keys (Open-Meteo & OpenWeatherMap public image endpoints).
+   - Configured with strict connection (10s) and read (10s) timeouts.
+2. **Asynchronous Background Execution (`ExecutorService`)**:
+   - Network requests, JSON parsing, and bitmap image decoding are executed on a dedicated background thread using `Executors.newSingleThreadExecutor()`.
+3. **Main Thread UI Synchronization (`runOnUiThread`)**:
+   - Safely updates UI views (`TextView`, `ImageView`, `ProgressBar`) once network data and bitmaps are successfully processed.
+4. **Robust Error Handling**:
+   - Catches network connectivity drops, timeouts, malformed JSON responses, and invalid city names with user-friendly error messages.
+
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
 ---
 
 ## 📱 Output Screenshots
 
+<<<<<<< HEAD
 ### 1. Main Weather Screen (`MainActivity.java`)
 ![WeatherNow Main Screen](./1.png)
 
 ### 2. Weather Details & Popular Cities (`activity_main.xml`)
+=======
+Here is the application running on an Android device:
+
+### 1. Main Weather Screen (Default / Searched City)
+![WeatherNow Main Screen](./1.png)
+
+### 2. Weather Details & Quick Chips
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
 ![WeatherNow Details](./2.png)
 
 ---
 
+<<<<<<< HEAD
 ## 💻 Complete Source Code
+=======
+## 💻 Core Code Implementation
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
 
 ### 1. `MainActivity.java`
 ```java
@@ -109,13 +161,20 @@ public class MainActivity extends AppCompatActivity {
 
         executorService = Executors.newSingleThreadExecutor();
 
+<<<<<<< HEAD
         // Popular City Quick Chips
+=======
+        // Popular City Chips
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
         findViewById(R.id.chipBengaluru).setOnClickListener(v -> loadCityWeather("Bengaluru"));
         findViewById(R.id.chipLondon).setOnClickListener(v -> loadCityWeather("London"));
         findViewById(R.id.chipNewYork).setOnClickListener(v -> loadCityWeather("New York"));
         findViewById(R.id.chipTokyo).setOnClickListener(v -> loadCityWeather("Tokyo"));
+<<<<<<< HEAD
         findViewById(R.id.chipParis).setOnClickListener(v -> loadCityWeather("Paris"));
         findViewById(R.id.chipMumbai).setOnClickListener(v -> loadCityWeather("Mumbai"));
+=======
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
 
         btnSearch.setOnClickListener(v -> {
             String city = etCity.getText().toString().trim();
@@ -134,7 +193,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+<<<<<<< HEAD
         // Load default city on app startup
+=======
+        // Load default city on startup
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
         etCity.setText("Bengaluru");
         fetchWeatherData("Bengaluru");
     }
@@ -156,10 +219,16 @@ public class MainActivity extends AppCompatActivity {
 
         executorService.execute(() -> {
             try {
+<<<<<<< HEAD
                 // Step 1: Geocoding API to get Latitude and Longitude (No API Key required)
                 String geoUrlStr = "https://geocoding-api.open-meteo.com/v1/search?name=" + 
                         java.net.URLEncoder.encode(cityName, "UTF-8") + "&count=1";
                 
+=======
+                // Step 1: Geocoding
+                String geoUrlStr = "https://geocoding-api.open-meteo.com/v1/search?name=" + 
+                        java.net.URLEncoder.encode(cityName, "UTF-8") + "&count=1";
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
                 String geoJsonResponse = makeHttpGETRequest(geoUrlStr);
                 if (geoJsonResponse == null) {
                     showErrorOnUI("Network error while connecting to server.");
@@ -178,19 +247,30 @@ public class MainActivity extends AppCompatActivity {
                 String name = cityObj.getString("name");
                 String country = cityObj.has("country") ? cityObj.getString("country") : "";
 
+<<<<<<< HEAD
                 // Step 2: Open-Meteo Weather Forecast API
+=======
+                // Step 2: Weather Forecast API
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
                 String weatherUrlStr = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + 
                         "&longitude=" + lon + 
                         "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m" + 
                         "&daily=temperature_2m_max,temperature_2m_min&timezone=auto";
+<<<<<<< HEAD
 
+=======
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
                 String weatherJsonResponse = makeHttpGETRequest(weatherUrlStr);
                 if (weatherJsonResponse == null) {
                     showErrorOnUI("Failed to fetch weather forecast.");
                     return;
                 }
 
+<<<<<<< HEAD
                 // Step 3: Download weather icon and city illustration bitmap from public APIs
+=======
+                // Step 3: Load public API images
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
                 int weatherCode = new JSONObject(weatherJsonResponse).getJSONObject("current").getInt("weather_code");
                 String iconCode = getWeatherIconCode(weatherCode);
                 String iconUrlStr = "https://openweathermap.org/img/wn/" + iconCode + "@4x.png";
@@ -413,6 +493,7 @@ public class MainActivity extends AppCompatActivity {
 }
 ```
 
+<<<<<<< HEAD
 ### 2. `activity_main.xml`
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -704,3 +785,45 @@ public class MainActivity extends AppCompatActivity {
 
 </ScrollView>
 ```
+=======
+---
+
+### 2. `AndroidManifest.xml`
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.WeatherNow">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+```
+
+---
+
+## 🚀 How to Build and Run
+1. Open the project in Android Studio.
+2. Ensure you have internet connection enabled.
+3. Click **Run 'app'** (`Shift + F10`) to build and deploy to your emulator or device.
+>>>>>>> ac7e570a822847989f74063f69182dc304897f10
