@@ -14,10 +14,8 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.chip.Chip
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -28,6 +26,7 @@ import java.net.URL
 import java.net.URLEncoder
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.math.round
 
 class MainActivity : AppCompatActivity() {
 
@@ -96,8 +95,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        etCity.setText("Bengaluru")
-        fetchWeatherData("Bengaluru")
+        etCity.setText(lastSearchedCity)
+        fetchWeatherData(lastSearchedCity)
     }
 
     private fun loadCityWeather(city: String) {
@@ -117,7 +116,6 @@ class MainActivity : AppCompatActivity() {
 
         executorService.execute {
             try {
-                // Step 1: Geocoding API to get Latitude and Longitude (No API Key required)
                 val geoUrlStr = "https://geocoding-api.open-meteo.com/v1/search?name=" + 
                         URLEncoder.encode(cityName, "UTF-8") + "&count=1"
                 
@@ -139,7 +137,6 @@ class MainActivity : AppCompatActivity() {
                 val name = cityObj.getString("name")
                 val country = if (cityObj.has("country")) cityObj.getString("country") else ""
 
-                // Step 2: Open-Meteo Weather Forecast API
                 val weatherUrlStr = "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon" + 
                         "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m" + 
                         "&daily=temperature_2m_max,temperature_2m_min&timezone=auto"
@@ -150,7 +147,6 @@ class MainActivity : AppCompatActivity() {
                     return@execute
                 }
 
-                // Step 3: Download weather icon and city illustration bitmap from public APIs
                 val weatherCode = JSONObject(weatherJsonResponse).getJSONObject("current").getInt("weather_code")
                 val iconCode = getWeatherIconCode(weatherCode)
                 val iconUrlStr = "https://openweathermap.org/img/wn/$iconCode@4x.png"
@@ -187,8 +183,7 @@ class MainActivity : AppCompatActivity() {
                 reader.close()
                 return response.toString()
             }
-        } catch (e: Exception) {
-            // Ignored
+        } catch (_: Exception) {
         } finally {
             connection?.disconnect()
         }
@@ -198,7 +193,7 @@ class MainActivity : AppCompatActivity() {
     private fun downloadBitmapFromUrl(urlString: String): Bitmap? {
         var connection: HttpURLConnection? = null
         var inputStream: InputStream? = null
-        try {
+        return try {
             val url = URL(urlString)
             connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
@@ -206,11 +201,11 @@ class MainActivity : AppCompatActivity() {
             connection.readTimeout = 10000
             connection.connect()
             inputStream = connection.inputStream
-            return BitmapFactory.decodeStream(inputStream)
-        } catch (e: Exception) {
-            return null
+            BitmapFactory.decodeStream(inputStream)
+        } catch (_: Exception) {
+            null
         } finally {
-            try { inputStream?.close() } catch (ignored: Exception) {}
+            try { inputStream?.close() } catch (_: Exception) {}
             connection?.disconnect()
         }
     }
@@ -231,13 +226,13 @@ class MainActivity : AppCompatActivity() {
             val tempMin = dailyObj.getJSONArray("temperature_2m_min").getDouble(0)
 
             val displayCity = if (TextUtils.isEmpty(country)) cityName else "$cityName, $country"
-            val displayTemp = "${Math.round(temp)}°C"
+            val displayTemp = "${round(temp).toInt()}°C"
             val displayCondition = getWeatherConditionText(weatherCode)
-            val displayFeelsLike = "Feels like: ${Math.round(feelsLike)}°C"
+            val displayFeelsLike = "Feels like: ${round(feelsLike).toInt()}°C"
             val displayHumidity = "$humidity%"
-            val displayWind = "${Math.round(windSpeed)} km/h"
-            val displayMinTemp = "${Math.round(tempMin)}°C"
-            val displayMaxTemp = "${Math.round(tempMax)}°C"
+            val displayWind = "${round(windSpeed).toInt()} km/h"
+            val displayMinTemp = "${round(tempMin).toInt()}°C"
+            val displayMaxTemp = "${round(tempMax).toInt()}°C"
             val weatherIconRes = getWeatherIconRes(weatherCode)
 
             runOnUiThread {
@@ -255,8 +250,8 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     ivWeatherIcon.setImageResource(weatherIconRes)
                 }
-                if (illustrationBitmap != null) {
-                    ivCityIllustration.setImageBitmap(illustrationBitmap)
+                illustrationBitmap?.let {
+                    ivCityIllustration.setImageBitmap(it)
                 }
 
                 showLoading(false)
@@ -318,7 +313,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isNetworkAvailable(): Boolean {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager?
         val activeNetwork = cm?.activeNetwork ?: return false
         val caps = cm.getNetworkCapabilities(activeNetwork) ?: return false
         return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -352,7 +347,7 @@ class MainActivity : AppCompatActivity() {
     private fun hideKeyboard() {
         val view = this.currentFocus
         if (view != null) {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager?
             imm?.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
