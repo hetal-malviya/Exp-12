@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">WeatherNow</string>
+    <string name="city_hint">Enter city name (e.g. Bengaluru)</string>
+    <string name="search">Search</string>
+    <string name="refresh">Refresh Weather</string>
+    <string name="error_empty_city">Please enter a city name.</string>
+    <string name="error_network">Network error or connection timed out. Please check your internet connection.</string>
+    <string name="error_city_not_found">City not found. Please check the spelling and try again.</string>
+    <string name="error_general">An error occurred while fetching weather data.</string>
+    <!-- Replace with your OpenWeatherMap API Key -->
+    <string name="open_weather_api_key">YOUR_API_KEY_HERE</string>
+</resources>
