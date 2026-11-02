@@ -35,8 +35,8 @@ Exp12/
 │               ├── layout/
 │               │   └── activity_main.xml  # Modern Material Design Weather UI Layout
 │               └── values/                # Colors, Strings & Material3 Themes
-├── MadExp-12_1.png                        # Output Screenshot 1 (Main Weather Screen)
-├── MadExp-12_2.png                        # Output Screenshot 2 (Weather Details & Popular Cities)
+├── 1.png                                  # Output Screenshot 1 (Main Weather Screen)
+├── 2.png                                  # Output Screenshot 2 (Weather Details & Popular Cities)
 └── README.md                              # Project Documentation
 ```
 
@@ -44,9 +44,9 @@ Exp12/
 
 ## 📱 Output Screenshots
 
-| Main Weather Screen (`MadExp-12_1.png`) | Weather Details & Popular Cities (`MadExp-12_2.png`) |
+| Main Weather Screen (`1.png`) | Weather Details & Popular Cities (`2.png`) |
 | :---: | :---: |
-| <img src="./MadExp-12_1.png" width="260" style="width: 260px; max-width: 100%; height: auto;" alt="Main Weather Screen"> | <img src="./MadExp-12_2.png" width="260" style="width: 260px; max-width: 100%; height: auto;" alt="Weather Details"> |
+| <img src="./1.png" width="260" style="width: 260px; max-width: 100%; height: auto;" alt="Main Weather Screen"> | <img src="./2.png" width="260" style="width: 260px; max-width: 100%; height: auto;" alt="Weather Details"> |
 
 ---
 
@@ -82,6 +82,7 @@ import java.net.URL
 import java.net.URLEncoder
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.math.round
 
 class MainActivity : AppCompatActivity() {
 
@@ -150,8 +151,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        etCity.setText("Bengaluru")
-        fetchWeatherData("Bengaluru")
+        etCity.setText(lastSearchedCity)
+        fetchWeatherData(lastSearchedCity)
     }
 
     private fun loadCityWeather(city: String) {
@@ -248,7 +249,7 @@ class MainActivity : AppCompatActivity() {
     private fun downloadBitmapFromUrl(urlString: String): Bitmap? {
         var connection: HttpURLConnection? = null
         var inputStream: InputStream? = null
-        try {
+        return try {
             val url = URL(urlString)
             connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
@@ -256,9 +257,9 @@ class MainActivity : AppCompatActivity() {
             connection.readTimeout = 10000
             connection.connect()
             inputStream = connection.inputStream
-            return BitmapFactory.decodeStream(inputStream)
+            BitmapFactory.decodeStream(inputStream)
         } catch (_: Exception) {
-            return null
+            null
         } finally {
             try { inputStream?.close() } catch (_: Exception) {}
             connection?.disconnect()
@@ -281,13 +282,13 @@ class MainActivity : AppCompatActivity() {
             val tempMin = dailyObj.getJSONArray("temperature_2m_min").getDouble(0)
 
             val displayCity = if (TextUtils.isEmpty(country)) cityName else "$cityName, $country"
-            val displayTemp = "${Math.round(temp)}°C"
+            val displayTemp = "${round(temp).toInt()}°C"
             val displayCondition = getWeatherConditionText(weatherCode)
-            val displayFeelsLike = "Feels like: ${Math.round(feelsLike)}°C"
+            val displayFeelsLike = "Feels like: ${round(feelsLike).toInt()}°C"
             val displayHumidity = "$humidity%"
-            val displayWind = "${Math.round(windSpeed)} km/h"
-            val displayMinTemp = "${Math.round(tempMin)}°C"
-            val displayMaxTemp = "${Math.round(tempMax)}°C"
+            val displayWind = "${round(windSpeed).toInt()} km/h"
+            val displayMinTemp = "${round(tempMin).toInt()}°C"
+            val displayMaxTemp = "${round(tempMax).toInt()}°C"
             val weatherIconRes = getWeatherIconRes(weatherCode)
 
             runOnUiThread {
@@ -305,8 +306,8 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     ivWeatherIcon.setImageResource(weatherIconRes)
                 }
-                if (illustrationBitmap != null) {
-                    ivCityIllustration.setImageBitmap(illustrationBitmap)
+                illustrationBitmap?.let {
+                    ivCityIllustration.setImageBitmap(it)
                 }
 
                 showLoading(false)
@@ -368,7 +369,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isNetworkAvailable(): Boolean {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager?
         val activeNetwork = cm?.activeNetwork ?: return false
         val caps = cm.getNetworkCapabilities(activeNetwork) ?: return false
         return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -402,7 +403,7 @@ class MainActivity : AppCompatActivity() {
     private fun hideKeyboard() {
         val view = this.currentFocus
         if (view != null) {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager?
             imm?.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
