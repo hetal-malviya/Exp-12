@@ -5,6 +5,21 @@ To develop a real-time Android application (**WeatherNow**) in **Kotlin** using 
 
 ---
 
+## 🛠️ Apparatus & Requirements
+* **IDE**: Android Studio
+* **Language**: Kotlin 2.0+
+* **Minimum SDK**: API 24 (Android 7.0 Nougat)
+* **Target SDK**: API 35
+* **Libraries & APIs**:
+  * `HttpURLConnection` (Native Android HTTP Client)
+  * `ExecutorService` (Background Threading)
+  * `org.json` (JSON Parsing)
+  * **Open-Meteo Geocoding & Weather APIs** (Public REST Web Service, 0 API Keys required)
+  * **OpenWeatherMap & Picsum APIs** (Public Image CDNs for weather icons and cityscape illustrations)
+* **Permissions**: `INTERNET`, `ACCESS_NETWORK_STATE`
+
+---
+
 ## 📂 Project Folder Structure
 ```text
 Exp12/
@@ -20,8 +35,8 @@ Exp12/
 │               ├── layout/
 │               │   └── activity_main.xml  # Modern Material Design Weather UI Layout
 │               └── values/                # Colors, Strings & Material3 Themes
-├── 1.png                                  # Output Screenshot 1 (Main Weather Screen)
-├── 2.png                                  # Output Screenshot 2 (Weather Details & Popular Cities)
+├── MadExp-12_1.png                        # Output Screenshot 1 (Main Weather Screen)
+├── MadExp-12_2.png                        # Output Screenshot 2 (Weather Details & Popular Cities)
 └── README.md                              # Project Documentation
 ```
 
@@ -29,15 +44,15 @@ Exp12/
 
 ## 📱 Output Screenshots
 
-### 1. Main Weather Screen (`1.png`)
-![Main Screen](./1.png)
-
-### 2. Weather Details & Popular Cities (`2.png`)
-![Weather Details](./2.png)
+| Main Weather Screen (`MadExp-12_1.png`) | Weather Details & Popular Cities (`MadExp-12_2.png`) |
+| :---: | :---: |
+| <img src="./MadExp-12_1.png" width="260" style="width: 260px; max-width: 100%; height: auto;" alt="Main Weather Screen"> | <img src="./MadExp-12_2.png" width="260" style="width: 260px; max-width: 100%; height: auto;" alt="Weather Details"> |
 
 ---
 
-## 💻 Complete Source Code (`MainActivity.kt`)
+## 💻 Complete Source Code
+
+### 1. `MainActivity.kt`
 ```kotlin
 package com.example.exp_12
 
@@ -238,7 +253,7 @@ class MainActivity : AppCompatActivity() {
             connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
             connection.connectTimeout = 10000
-            connection.connectTimeout = 10000
+            connection.readTimeout = 10000
             connection.connect()
             inputStream = connection.inputStream
             return BitmapFactory.decodeStream(inputStream)
@@ -397,6 +412,298 @@ class MainActivity : AppCompatActivity() {
         executorService.shutdown()
     }
 }
+```
+
+### 2. `activity_main.xml`
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_gradient"
+    android:fillViewport="true"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="40dp"
+        android:paddingBottom="20dp">
+
+        <!-- Top Header Banner -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_weather_sun" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textColor="@color/white"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Know the Weather, Anywhere!"
+                    android:textColor="#E0E0E0"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Search Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/etCity"
+                android:layout_width="0dp"
+                android:layout_height="54dp"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="1"
+                android:autofillHints="name"
+                android:background="@drawable/rounded_card_bg"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="12dp"
+                android:hint="@string/city_hint"
+                android:inputType="textPersonName"
+                android:maxLines="1"
+                android:paddingHorizontal="16dp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_secondary"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="54dp"
+                android:backgroundTint="#5C35D6"
+                android:text="@string/search"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:cornerRadius="27dp" />
+
+        </LinearLayout>
+
+        <!-- Popular Cities Quick Chips -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipBengaluru"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="Bengaluru"
+                    android:textColor="@color/text_primary"
+                    app:chipBackgroundColor="#FFFFFF"
+                    app:chipStrokeColor="#E0E0E0"
+                    app:chipStrokeWidth="1dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipLondon"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="London"
+                    android:textColor="@color/text_primary"
+                    app:chipBackgroundColor="#FFFFFF"
+                    app:chipStrokeColor="#E0E0E0"
+                    app:chipStrokeWidth="1dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipNewYork"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="New York"
+                    android:textColor="@color/text_primary"
+                    app:chipBackgroundColor="#FFFFFF"
+                    app:chipStrokeColor="#E0E0E0"
+                    app:chipStrokeWidth="1dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipTokyo"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tokyo"
+                    android:textColor="@color/text_primary"
+                    app:chipBackgroundColor="#FFFFFF"
+                    app:chipStrokeColor="#E0E0E0"
+                    app:chipStrokeWidth="1dp" />
+
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Weather Card Container -->
+        <LinearLayout
+            android:id="@+id/cardWeather"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <!-- Main Weather Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#CCFFFFFF"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="6dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <!-- Location row -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:contentDescription="Location"
+                            android:src="@drawable/ic_location_pin" />
+
+                        <TextView
+                            android:id="@+id/tvCityName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:textColor="@color/text_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            tools:text="Bengaluru, India" />
+
+                    </LinearLayout>
+
+                    <!-- Large Weather Icon & Temp Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/ivWeatherIcon"
+                            android:layout_width="90dp"
+                            android:layout_height="90dp"
+                            android:contentDescription="Weather Icon"
+                            android:src="@drawable/ic_weather_sun" />
+
+                        <TextView
+                            android:id="@+id/tvTemperature"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:textColor="@color/text_primary"
+                            android:textSize="56sp"
+                            android:textStyle="bold"
+                            tools:text="26°C" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvCondition"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        tools:text="Partly Cloudy" />
+
+                    <View
+                        android:layout_width="160dp"
+                        android:layout_height="2dp"
+                        android:layout_marginVertical="10dp"
+                        android:background="#BDBDBD" />
+
+                    <TextView
+                        android:id="@+id/tvFeelsLike"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="15sp"
+                        tools:text="Feels like: 27°C" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Cityscape Illustration loaded from Public API -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#CCFFFFFF"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp">
+
+                <ImageView
+                    android:id="@+id/ivCityIllustration"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="City Illustration"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_weather_sun" />
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
 ```
 
 ---
